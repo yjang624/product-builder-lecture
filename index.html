@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,26 +9,86 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --bg: linear-gradient(135deg, #fff8fb, #fdf2ff);
+      --container-bg: #fff;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+      --text: #333;
+      --desc: #666;
+      --label: #777;
+      --plus: #999;
+      --history-bg: #fff8fc;
+      --history-border: #f8d7e7;
+      --history-item-bg: #fff;
+      --history-item-border: #f5d8e7;
+      --history-item-text: #555;
+      --history-title: #c04d8a;
+      --toggle-bg: #eee;
+      --toggle-text: #555;
+    }
+
+    [data-theme="dark"] {
+      --bg: linear-gradient(135deg, #1a1a2e, #16213e);
+      --container-bg: #1e1e2e;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+      --text: #eee;
+      --desc: #aaa;
+      --label: #999;
+      --plus: #777;
+      --history-bg: #16213e;
+      --history-border: #3a2a4a;
+      --history-item-bg: #252535;
+      --history-item-border: #3a2a4a;
+      --history-item-text: #ccc;
+      --history-title: #e87dc0;
+      --toggle-bg: #333;
+      --toggle-text: #eee;
+    }
+
     body {
       margin: 0;
       font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-      background: linear-gradient(135deg, #fff8fb, #fdf2ff);
-      color: #333;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
     .container {
       width: 100%;
       max-width: 720px;
-      background: #fff;
+      background: var(--container-bg);
       border-radius: 28px;
       padding: 32px 24px;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+      box-shadow: var(--shadow);
       text-align: center;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+
+    .toggle-btn {
+      background: var(--toggle-bg);
+      color: var(--toggle-text);
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      box-shadow: none;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .toggle-btn:hover {
+      transform: translateY(-1px);
     }
 
     h1 {
@@ -39,7 +99,7 @@
 
     .desc {
       margin: 0 0 28px;
-      color: #666;
+      color: var(--desc);
       line-height: 1.6;
     }
 
@@ -70,7 +130,7 @@
     .plus {
       font-size: 1.5rem;
       font-weight: 700;
-      color: #999;
+      color: var(--plus);
       margin: 0 2px;
     }
 
@@ -78,7 +138,7 @@
       margin-top: 8px;
       margin-bottom: 12px;
       font-size: 0.95rem;
-      color: #777;
+      color: var(--label);
     }
 
     button {
@@ -105,16 +165,17 @@
     .history {
       margin-top: 28px;
       text-align: left;
-      background: #fff8fc;
-      border: 1px solid #f8d7e7;
+      background: var(--history-bg);
+      border: 1px solid var(--history-border);
       border-radius: 20px;
       padding: 18px;
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     .history h2 {
       margin: 0 0 14px;
       font-size: 1.05rem;
-      color: #c04d8a;
+      color: var(--history-title);
     }
 
     .history-list {
@@ -127,12 +188,13 @@
 
     .history-item {
       padding: 12px 14px;
-      background: white;
+      background: var(--history-item-bg);
       border-radius: 14px;
-      border: 1px solid #f5d8e7;
+      border: 1px solid var(--history-item-border);
       font-size: 0.95rem;
-      color: #555;
+      color: var(--history-item-text);
       line-height: 1.6;
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     @keyframes pop {
@@ -161,6 +223,10 @@
 </head>
 <body>
   <div class="container">
+    <div class="top-bar">
+      <button class="toggle-btn" id="themeToggle">🌙 다크모드</button>
+    </div>
+
     <h1>🎟 로또 추첨기</h1>
     <p class="desc">
       버튼을 누르면 1~45 사이 숫자 6개와 보너스 번호 1개를 랜덤으로 추첨해요.
@@ -192,6 +258,14 @@
     const numbersWrap = document.getElementById("numbersWrap");
     const drawBtn = document.getElementById("drawBtn");
     const historyList = document.getElementById("historyList");
+    const themeToggle = document.getElementById("themeToggle");
+    const html = document.documentElement;
+
+    themeToggle.addEventListener("click", () => {
+      const isDark = html.getAttribute("data-theme") === "dark";
+      html.setAttribute("data-theme", isDark ? "light" : "dark");
+      themeToggle.textContent = isDark ? "🌙 다크모드" : "☀️ 라이트모드";
+    });
 
     function getBallColor(num) {
       if (num <= 10) return "#f6c445";
