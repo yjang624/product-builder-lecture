@@ -1,14 +1,39 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+  <title>할 일 목록</title>
+  <link href="/style.css" rel="stylesheet">
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+  <div class="container">
+    <div class="header">
+      <h1>할 일 목록</h1>
+      <span class="date" id="date"></span>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <p class="progress-label" id="progress-label">0 / 0 완료</p>
+
+    <form class="input-row" id="form">
+      <input
+        type="text"
+        id="input"
+        placeholder="새 할 일 입력..."
+        autocomplete="off"
+        maxlength="100"
+      />
+      <button type="submit">추가</button>
+    </form>
+
+    <ul id="todo-list"></ul>
+
+    <button class="clear-btn" id="clear-btn">완료된 항목 삭제</button>
+  </div>
+
+  <script defer src="/main.js"></script>
 </body>
 </html>
