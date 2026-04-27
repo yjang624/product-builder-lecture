@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>제휴 문의</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #fff8fb, #fdf2ff);
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+      padding: 48px 44px;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .card h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #c04d8a;
+      margin-bottom: 6px;
+    }
+
+    .card p.subtitle {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 32px;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    label .req {
+      color: #e05a9a;
+      margin-left: 2px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #e8d5f0;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: #333;
+      background: #fdf8ff;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #c04d8a;
+      background: #fff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #e05a9a, #c04d8a);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    button[type="submit"]:hover { opacity: 0.9; }
+    button[type="submit"]:active { transform: scale(0.98); }
+
+    .success-msg {
+      display: none;
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    .success-msg .icon { font-size: 3rem; margin-bottom: 12px; }
+    .success-msg h2 { color: #c04d8a; margin-bottom: 8px; }
+    .success-msg p { color: #888; font-size: 0.9rem; }
+
+    @media (max-width: 480px) {
+      .card { padding: 36px 24px; }
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- 폼 -->
+    <div id="form-section">
+      <h1>제휴 문의</h1>
+      <p class="subtitle">아래 내용을 작성해 주시면 빠르게 검토 후 연락드리겠습니다.</p>
+
+      <form id="contact-form" action="https://formspree.io/f/mojyzpvd" method="POST">
+
+        <div class="row">
+          <div class="field">
+            <label>이름 <span class="req">*</span></label>
+            <input type="text" name="name" placeholder="홍길동" required />
+          </div>
+          <div class="field">
+            <label>회사명 <span class="req">*</span></label>
+            <input type="text" name="company" placeholder="(주)회사명" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>이메일 <span class="req">*</span></label>
+          <input type="email" name="email" placeholder="example@company.com" required />
+        </div>
+
+        <div class="field">
+          <label>연락처</label>
+          <input type="tel" name="phone" placeholder="010-0000-0000" />
+        </div>
+
+        <div class="field">
+          <label>제휴 유형 <span class="req">*</span></label>
+          <select name="type" required>
+            <option value="" disabled selected>선택해 주세요</option>
+            <option value="마케팅">마케팅 제휴</option>
+            <option value="기술">기술 협력</option>
+            <option value="콘텐츠">콘텐츠 제휴</option>
+            <option value="투자">투자 / 파트너십</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>문의 내용 <span class="req">*</span></label>
+          <textarea name="message" placeholder="제휴 제안 내용을 자유롭게 작성해 주세요." required></textarea>
+        </div>
+
+        <!-- Formspree 스팸 방지 (허니팟) -->
+        <input type="text" name="_gotcha" style="display:none" />
+
+        <button type="submit">문의 보내기</button>
+      </form>
+    </div>
+
+    <!-- 전송 완료 메시지 -->
+    <div class="success-msg" id="success-msg">
+      <div class="icon">✅</div>
+      <h2>문의가 접수되었습니다!</h2>
+      <p>빠른 시일 내에 입력하신 이메일로 연락드리겠습니다.<br />감사합니다.</p>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('contact-form');
+    const formSection = document.getElementById('form-section');
+    const successMsg = document.getElementById('success-msg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('button[type="submit"]');
+      btn.textContent = '전송 중...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          formSection.style.display = 'none';
+          successMsg.style.display = 'block';
+        } else {
+          alert('전송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+          btn.textContent = '문의 보내기';
+          btn.disabled = false;
+        }
+      } catch {
+        alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.');
+        btn.textContent = '문의 보내기';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
