@@ -480,6 +480,51 @@
   </script>
 
   <section class="contact-section">
+    <h2 style="font-size:1.5rem; color:#d85a9d; margin-bottom:6px;">🐶 나는 강아지상? 고양이상? 🐱</h2>
+    <p class="c-sub">AI가 당신의 동물상을 분석해드립니다!</p>
+
+    <div class="tabs" style="display:flex; gap:8px; background:#f5f0ff; border-radius:14px; padding:4px; margin-bottom:20px;">
+      <button class="tab active" onclick="switchTab('upload')" style="flex:1; padding:10px; border:none; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; background:#fff; color:#d85a9d; box-shadow:0 2px 8px rgba(0,0,0,0.08);">📁 사진 업로드</button>
+      <button class="tab" onclick="switchTab('webcam')" id="tab-webcam-btn" style="flex:1; padding:10px; border:none; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; background:transparent; color:#aaa;">📷 웹캠</button>
+    </div>
+
+    <div id="tab-upload">
+      <div onclick="document.getElementById('a-file').click()" style="border:2px dashed #e8d5f0; border-radius:18px; padding:32px 20px; cursor:pointer; text-align:center; margin-bottom:16px;">
+        <div style="font-size:2.5rem; margin-bottom:8px;">🖼️</div>
+        <p style="color:#aaa; font-size:0.88rem;">클릭하여 사진 선택</p>
+      </div>
+      <input type="file" id="a-file" accept="image/*" style="display:none" onchange="onFileSelect(event)" />
+      <div id="a-preview-wrap" style="display:none; margin-bottom:16px;">
+        <img id="a-preview" style="width:100%; border-radius:18px; max-height:280px; object-fit:cover;" />
+      </div>
+      <button id="a-analyze-btn" onclick="analyzeImage()" disabled style="width:100%; padding:14px; background:linear-gradient(135deg,#ff7eb6,#d85a9d); color:#fff; font-size:1rem; font-weight:700; font-family:inherit; border:none; border-radius:14px; cursor:pointer; opacity:0.5;">분석하기 🔍</button>
+    </div>
+
+    <div id="tab-webcam-section" style="display:none;">
+      <div id="a-webcam-container" style="margin-bottom:16px;"></div>
+      <button id="a-webcam-start" onclick="startWebcam()" style="width:100%; padding:14px; background:linear-gradient(135deg,#ff7eb6,#d85a9d); color:#fff; font-size:1rem; font-weight:700; font-family:inherit; border:none; border-radius:14px; cursor:pointer; margin-bottom:10px;">웹캠 시작 📷</button>
+      <button id="a-webcam-capture" onclick="captureAndAnalyze()" style="display:none; width:100%; padding:14px; background:linear-gradient(135deg,#ff7eb6,#d85a9d); color:#fff; font-size:1rem; font-weight:700; font-family:inherit; border:none; border-radius:14px; cursor:pointer;">지금 분석하기 🔍</button>
+    </div>
+
+    <p id="a-loading" style="display:none; text-align:center; color:#ccc; margin:16px 0;">🤖 AI 분석 중...</p>
+
+    <div id="a-result" style="display:none; text-align:center; margin-top:16px;">
+      <div id="a-emoji" style="font-size:4rem; margin-bottom:8px;"></div>
+      <div id="a-title" style="font-size:1.4rem; font-weight:800; color:#d85a9d; margin-bottom:4px;"></div>
+      <div id="a-desc" style="font-size:0.88rem; color:#888; margin-bottom:20px;"></div>
+      <div style="margin-bottom:8px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; color:#555; margin-bottom:4px;"><span>🐶 강아지상</span><span id="a-dog-pct">0%</span></div>
+        <div style="background:#f0e8f8; border-radius:99px; height:12px; overflow:hidden;"><div id="a-dog-bar" style="height:100%; border-radius:99px; background:linear-gradient(90deg,#ffb347,#ff7b00); width:0%; transition:width 1s ease;"></div></div>
+      </div>
+      <div style="margin-bottom:20px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; color:#555; margin-bottom:4px;"><span>🐱 고양이상</span><span id="a-cat-pct">0%</span></div>
+        <div style="background:#f0e8f8; border-radius:99px; height:12px; overflow:hidden;"><div id="a-cat-bar" style="height:100%; border-radius:99px; background:linear-gradient(90deg,#a78bfa,#7c3aed); width:0%; transition:width 1s ease;"></div></div>
+      </div>
+      <button onclick="resetAnimal()" style="width:100%; padding:12px; background:transparent; color:#d85a9d; border:2px solid #d85a9d; border-radius:14px; font-size:0.95rem; font-weight:700; font-family:inherit; cursor:pointer;">다시 테스트하기 🔄</button>
+    </div>
+  </section>
+
+  <section class="contact-section">
     <div id="disqus_thread"></div>
     <script>
       (function() {
@@ -491,5 +536,110 @@
     </script>
     <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+  <script>
+    const A_MODEL_URL = "https://teachablemachine.withgoogle.com/models/DzACV1ODn/";
+    let aModel, aWebcam, aSelectedFile;
+
+    async function loadAModel() {
+      if (!aModel) aModel = await tmImage.load(A_MODEL_URL + "model.json", A_MODEL_URL + "metadata.json");
+      return aModel;
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tab-upload').style.display = tab === 'upload' ? 'block' : 'none';
+      document.getElementById('tab-webcam-section').style.display = tab === 'webcam' ? 'block' : 'none';
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        const isActive = (i === 0 && tab === 'upload') || (i === 1 && tab === 'webcam');
+        t.style.background = isActive ? '#fff' : 'transparent';
+        t.style.color = isActive ? '#d85a9d' : '#aaa';
+        t.style.boxShadow = isActive ? '0 2px 8px rgba(0,0,0,0.08)' : 'none';
+      });
+      document.getElementById('a-result').style.display = 'none';
+    }
+
+    function onFileSelect(e) {
+      aSelectedFile = e.target.files[0];
+      if (!aSelectedFile) return;
+      document.getElementById('a-preview').src = URL.createObjectURL(aSelectedFile);
+      document.getElementById('a-preview-wrap').style.display = 'block';
+      document.getElementById('a-analyze-btn').disabled = false;
+      document.getElementById('a-analyze-btn').style.opacity = '1';
+      document.getElementById('a-result').style.display = 'none';
+    }
+
+    async function analyzeImage() {
+      document.getElementById('a-loading').style.display = 'block';
+      document.getElementById('a-result').style.display = 'none';
+      await loadAModel();
+      const img = document.getElementById('a-preview');
+      const predictions = await aModel.predict(img);
+      showAnimalResult(predictions);
+    }
+
+    async function startWebcam() {
+      document.getElementById('a-webcam-start').style.display = 'none';
+      document.getElementById('a-loading').style.display = 'block';
+      await loadAModel();
+      aWebcam = new tmImage.Webcam(300, 300, true);
+      await aWebcam.setup();
+      await aWebcam.play();
+      const container = document.getElementById('a-webcam-container');
+      container.innerHTML = '';
+      container.appendChild(aWebcam.canvas);
+      aWebcam.canvas.style.width = '100%';
+      aWebcam.canvas.style.borderRadius = '18px';
+      document.getElementById('a-loading').style.display = 'none';
+      document.getElementById('a-webcam-capture').style.display = 'block';
+    }
+
+    async function captureAndAnalyze() {
+      document.getElementById('a-loading').style.display = 'block';
+      aWebcam.update();
+      const predictions = await aModel.predict(aWebcam.canvas);
+      showAnimalResult(predictions);
+    }
+
+    function showAnimalResult(predictions) {
+      document.getElementById('a-loading').style.display = 'none';
+      let dog = 0, cat = 0;
+      predictions.forEach(p => {
+        if (p.className.toLowerCase().includes('dog') || p.className.includes('강아지')) dog = p.probability;
+        else cat = p.probability;
+      });
+      const dogPct = Math.round(dog * 100);
+      const catPct = Math.round(cat * 100);
+      document.getElementById('a-dog-pct').textContent = dogPct + '%';
+      document.getElementById('a-cat-pct').textContent = catPct + '%';
+      setTimeout(() => {
+        document.getElementById('a-dog-bar').style.width = dogPct + '%';
+        document.getElementById('a-cat-bar').style.width = catPct + '%';
+      }, 100);
+      if (dog >= cat) {
+        document.getElementById('a-emoji').textContent = '🐶';
+        document.getElementById('a-title').textContent = '강아지상이에요!';
+        document.getElementById('a-desc').textContent = '충성스럽고 따뜻한 매력! 주변 사람들에게 사랑받는 타입이에요.';
+      } else {
+        document.getElementById('a-emoji').textContent = '🐱';
+        document.getElementById('a-title').textContent = '고양이상이에요!';
+        document.getElementById('a-desc').textContent = '도도하고 신비로운 매력! 쿨한 매력으로 사람들을 끌어당기는 타입이에요.';
+      }
+      document.getElementById('a-result').style.display = 'block';
+    }
+
+    function resetAnimal() {
+      document.getElementById('a-result').style.display = 'none';
+      document.getElementById('a-preview-wrap').style.display = 'none';
+      document.getElementById('a-preview').src = '';
+      document.getElementById('a-file').value = '';
+      document.getElementById('a-analyze-btn').disabled = true;
+      document.getElementById('a-analyze-btn').style.opacity = '0.5';
+      document.getElementById('a-dog-bar').style.width = '0%';
+      document.getElementById('a-cat-bar').style.width = '0%';
+      aSelectedFile = null;
+    }
+  </script>
 </body>
 </html>
