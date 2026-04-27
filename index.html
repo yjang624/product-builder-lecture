@@ -52,9 +52,10 @@
       color: var(--text);
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
       padding: 24px;
+      gap: 32px;
       transition: background 0.3s ease, color 0.3s ease;
     }
 
@@ -219,6 +220,94 @@
         font-size: 1.6rem;
       }
     }
+
+    .contact-section {
+      width: 100%;
+      max-width: 720px;
+      background: var(--container-bg);
+      border-radius: 28px;
+      padding: 32px 24px;
+      box-shadow: var(--shadow);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .contact-section h2 {
+      font-size: 1.5rem;
+      color: #d85a9d;
+      margin: 0 0 6px;
+    }
+
+    .contact-section .subtitle {
+      font-size: 0.9rem;
+      color: var(--desc);
+      margin: 0 0 24px;
+    }
+
+    .contact-field {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .contact-field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--label);
+      margin-bottom: 6px;
+    }
+
+    .contact-field label .req { color: #e05a9a; margin-left: 2px; }
+
+    .contact-field input,
+    .contact-field select,
+    .contact-field textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--history-border);
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--history-bg);
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .contact-field input:focus,
+    .contact-field select:focus,
+    .contact-field textarea:focus {
+      border-color: #d85a9d;
+    }
+
+    .contact-field textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .contact-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .contact-submit {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .contact-success {
+      display: none;
+      text-align: center;
+      padding: 16px 0;
+    }
+
+    .contact-success .icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .contact-success p { color: var(--desc); font-size: 0.9rem; }
+
+    @media (max-width: 480px) {
+      .contact-row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -253,6 +342,57 @@
       </div>
     </div>
   </div>
+
+  <section class="contact-section">
+    <div id="contact-form-wrap">
+      <h2>제휴 문의</h2>
+      <p class="subtitle">아래 내용을 작성해 주시면 빠르게 검토 후 연락드리겠습니다.</p>
+
+      <form id="contact-form" action="https://formspree.io/f/mojyzpvd" method="POST">
+        <div class="contact-row">
+          <div class="contact-field">
+            <label>이름 <span class="req">*</span></label>
+            <input type="text" name="name" placeholder="홍길동" required />
+          </div>
+          <div class="contact-field">
+            <label>회사명 <span class="req">*</span></label>
+            <input type="text" name="company" placeholder="(주)회사명" required />
+          </div>
+        </div>
+        <div class="contact-field">
+          <label>이메일 <span class="req">*</span></label>
+          <input type="email" name="email" placeholder="example@company.com" required />
+        </div>
+        <div class="contact-field">
+          <label>연락처</label>
+          <input type="tel" name="phone" placeholder="010-0000-0000" />
+        </div>
+        <div class="contact-field">
+          <label>제휴 유형 <span class="req">*</span></label>
+          <select name="type" required>
+            <option value="" disabled selected>선택해 주세요</option>
+            <option value="마케팅">마케팅 제휴</option>
+            <option value="기술">기술 협력</option>
+            <option value="콘텐츠">콘텐츠 제휴</option>
+            <option value="투자">투자 / 파트너십</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div class="contact-field">
+          <label>문의 내용 <span class="req">*</span></label>
+          <textarea name="message" placeholder="제휴 제안 내용을 자유롭게 작성해 주세요." required></textarea>
+        </div>
+        <input type="text" name="_gotcha" style="display:none" />
+        <button type="submit" class="contact-submit">문의 보내기</button>
+      </form>
+    </div>
+
+    <div class="contact-success" id="contact-success">
+      <div class="icon">✅</div>
+      <h3 style="color:#d85a9d; margin:0 0 8px;">문의가 접수되었습니다!</h3>
+      <p>빠른 시일 내에 입력하신 이메일로 연락드리겠습니다.</p>
+    </div>
+  </section>
 
   <script>
     const numbersWrap = document.getElementById("numbersWrap");
@@ -330,6 +470,38 @@
       const { mainNumbers, bonusNumber } = drawLotto();
       renderNumbers(mainNumbers, bonusNumber);
       addHistory(mainNumbers, bonusNumber);
+    });
+
+    const contactForm = document.getElementById('contact-form');
+    const contactFormWrap = document.getElementById('contact-form-wrap');
+    const contactSuccess = document.getElementById('contact-success');
+
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = contactForm.querySelector('button[type="submit"]');
+      btn.textContent = '전송 중...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(contactForm.action, {
+          method: 'POST',
+          body: new FormData(contactForm),
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          contactFormWrap.style.display = 'none';
+          contactSuccess.style.display = 'block';
+        } else {
+          alert('전송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+          btn.textContent = '문의 보내기';
+          btn.disabled = false;
+        }
+      } catch {
+        alert('네트워크 오류가 발생했습니다.');
+        btn.textContent = '문의 보내기';
+        btn.disabled = false;
+      }
     });
   </script>
 </body>
